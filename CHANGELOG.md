@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved table detection and handling:
   - Enhanced regex checks for table separators
-  - Better support for additional table formatting scenarios
+  - Better support for additional table format ting scenarios
   - More robust table structure validation
 
 ## [1.4.5] - 2025-04-28
