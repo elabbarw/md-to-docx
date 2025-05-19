@@ -227,7 +227,12 @@ export async function convertMarkdownToDocx(
 
         // Handle tables
         if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
-          if (i + 1 < lines.length && lines[i + 1].includes("|-")) {
+          if (
+            i + 1 < lines.length &&
+            (/^\s*\|(?:\s*-+\s*\|)+\s*$/.test(lines[i + 1]) ||
+              (i + 2 < lines.length &&
+                /^\s*\|(?:\s*-+\s*\|)+\s*$/.test(lines[i + 2])))
+          ) {
             if (inList) {
               docChildren.push(...listItems);
               listItems = [];

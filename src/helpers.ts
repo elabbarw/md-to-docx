@@ -441,8 +441,12 @@ export function collectTables(lines: string[]): TableData[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
-      if (i + 1 < lines.length && lines[i + 1].includes("|-")) {
+    if (line.trim().startsWith("|")) {
+      // Check for separator row with proper regex
+      if (
+        i + 1 < lines.length &&
+        /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/.test(lines[i + 1])
+      ) {
         const headers = line
           .split("|")
           .filter(Boolean)
