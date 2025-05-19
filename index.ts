@@ -108,7 +108,12 @@ for (let i = 0; i < lines.length; i++) {
   // Handle tables
   if (line.trim().startsWith("|") && line.trim().endsWith("|")) {
     // Check if this is the start of a table (has a separator row next)
-    if (i + 1 < lines.length && lines[i + 1].includes("|-")) {
+    if (
+      i + 1 < lines.length &&
+      (/^\s*\|(?:\s*-+\s*\|)+\s*$/.test(lines[i + 1]) ||
+        (i + 2 < lines.length &&
+          /^\s*\|(?:\s*-+\s*\|)+\s*$/.test(lines[i + 2])))
+    ) {
       if (inList) {
         docChildren.push(...listItems);
         listItems = [];
