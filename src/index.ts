@@ -442,6 +442,55 @@ export async function convertMarkdownToDocx(
         })
       );
       headings.forEach((heading) => {
+        // Determine font size based on heading level
+        let fontSize;
+        let isBold = false;
+        let isItalic = false;
+
+        // Apply level-specific styles if provided
+        switch (heading.level) {
+          case 1:
+            fontSize = style.tocHeading1FontSize || style.tocFontSize;
+            isBold =
+              style.tocHeading1Bold !== undefined
+                ? style.tocHeading1Bold
+                : true;
+            isItalic = style.tocHeading1Italic || false;
+            break;
+          case 2:
+            fontSize = style.tocHeading2FontSize || style.tocFontSize;
+            isBold =
+              style.tocHeading2Bold !== undefined
+                ? style.tocHeading2Bold
+                : false;
+            isItalic = style.tocHeading2Italic || false;
+            break;
+          case 3:
+            fontSize = style.tocHeading3FontSize || style.tocFontSize;
+            isBold = style.tocHeading3Bold || false;
+            isItalic = style.tocHeading3Italic || false;
+            break;
+          case 4:
+            fontSize = style.tocHeading4FontSize || style.tocFontSize;
+            isBold = style.tocHeading4Bold || false;
+            isItalic = style.tocHeading4Italic || false;
+            break;
+          case 5:
+            fontSize = style.tocHeading5FontSize || style.tocFontSize;
+            isBold = style.tocHeading5Bold || false;
+            isItalic = style.tocHeading5Italic || false;
+            break;
+          default:
+            fontSize = style.tocFontSize;
+        }
+
+        // Use default calculation if no specific size provided
+        if (!fontSize) {
+          fontSize = style.paragraphSize
+            ? style.paragraphSize - (heading.level - 1) * 2
+            : 24 - (heading.level - 1) * 2;
+        }
+
         tocContent.push(
           new Paragraph({
             children: [
@@ -450,12 +499,16 @@ export async function convertMarkdownToDocx(
                 children: [
                   new TextRun({
                     text: heading.text,
+                    size: fontSize,
+                    bold: isBold,
+                    italics: isItalic,
                   }),
                 ],
               }),
             ],
+            // Indentation based on heading level
             indent: { left: (heading.level - 1) * 400 },
-            spacing: { after: 120 },
+            spacing: { after: 120 }, // Spacing between TOC items
           })
         );
       });

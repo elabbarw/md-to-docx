@@ -13,6 +13,23 @@ export interface Style {
   listItemSize?: number;
   codeBlockSize?: number;
   blockquoteSize?: number;
+  tocFontSize?: number;
+  // TOC level-specific styling
+  tocHeading1FontSize?: number;
+  tocHeading2FontSize?: number;
+  tocHeading3FontSize?: number;
+  tocHeading4FontSize?: number;
+  tocHeading5FontSize?: number;
+  tocHeading1Bold?: boolean;
+  tocHeading2Bold?: boolean;
+  tocHeading3Bold?: boolean;
+  tocHeading4Bold?: boolean;
+  tocHeading5Bold?: boolean;
+  tocHeading1Italic?: boolean;
+  tocHeading2Italic?: boolean;
+  tocHeading3Italic?: boolean;
+  tocHeading4Italic?: boolean;
+  tocHeading5Italic?: boolean;
   // Alignment options
   paragraphAlignment?: "LEFT" | "CENTER" | "RIGHT" | "JUSTIFIED";
   headingAlignment?: "LEFT" | "CENTER" | "RIGHT" | "JUSTIFIED";

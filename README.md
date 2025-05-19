@@ -98,12 +98,50 @@ const options = {
     listItemSize: 24,
     codeBlockSize: 20,
     blockquoteSize: 24,
+    tocFontSize: 22, // Custom font size for TOC entries
     paragraphAlignment: "JUSTIFIED",
     blockquoteAlignment: "CENTER",
   },
 };
 
 const blob = await convertMarkdownToDocx(markdown, options);
+```
+
+### Custom Table of Contents Styling
+
+```typescript
+const options = {
+  documentType: "document",
+  style: {
+    // Regular document styling
+    titleSize: 32,
+    headingSpacing: 240,
+    paragraphSpacing: 240,
+
+    // Custom TOC styling for each heading level
+    tocHeading1FontSize: 28,
+    tocHeading1Bold: true,
+    tocHeading1Italic: false,
+
+    tocHeading2FontSize: 24,
+    tocHeading2Bold: true,
+    tocHeading2Italic: false,
+
+    tocHeading3FontSize: 22,
+    tocHeading3Bold: false,
+    tocHeading3Italic: false,
+
+    tocHeading4FontSize: 20,
+    tocHeading4Bold: false,
+    tocHeading4Italic: true,
+
+    tocHeading5FontSize: 18,
+    tocHeading5Bold: false,
+    tocHeading5Italic: true,
+  },
+};
+
+const blob = await convertMarkdownToDocx(markdownWithToc, options);
 ```
 
 ### Text Alignment Example
@@ -217,6 +255,10 @@ Converts Markdown text to a DOCX document.
       - `listItemSize` (number): Font size for list items
       - `codeBlockSize` (number): Font size for code blocks
       - `blockquoteSize` (number): Font size for blockquotes
+      - `tocFontSize` (number): Font size for Table of Contents entries
+      - `tocHeading1FontSize` through `tocHeading5FontSize` (number): Font sizes for specific heading levels in TOC
+      - `tocHeading1Bold` through `tocHeading5Bold` (boolean): Whether specific heading levels in TOC should be bold
+      - `tocHeading1Italic` through `tocHeading5Italic` (boolean): Whether specific heading levels in TOC should be italic
     - Spacing:
       - `headingSpacing` (number): Spacing before/after headings
       - `paragraphSpacing` (number): Spacing before/after paragraphs

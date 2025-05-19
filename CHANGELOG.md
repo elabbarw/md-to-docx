@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2025-04-28
+
+### Added
+
+- Level-specific styling for Table of Contents entries:
+  - `tocHeading1FontSize` through `tocHeading5FontSize` for different font sizes
+  - `tocHeading1Bold` through `tocHeading5Bold` for bold formatting
+  - `tocHeading1Italic` through `tocHeading5Italic` for italic formatting
+
+## [1.4.4] - 2025-04-28
+
+### Added
+
+- Custom font size for Table of Contents entries via `tocFontSize` style option.
+
 ## [1.4.3] - 2025-04-28
 
 ### Added
