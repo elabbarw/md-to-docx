@@ -152,6 +152,17 @@ export async function convertMarkdownToDocx(
           continue;
         }
 
+        // Handle Markdown Separators (e.g., ---)
+        if (/^\s*---\s*$/.test(trimmedLine)) {
+          if (inList) {
+            docChildren.push(...listItems);
+            listItems = [];
+            inList = false;
+          }
+          // Skip the separator line
+          continue;
+        }
+
         // Handle TOC Placeholder
         if (trimmedLine === "[TOC]") {
           if (inList) {
