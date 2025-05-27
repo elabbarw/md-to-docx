@@ -303,9 +303,10 @@ The module supports the following Markdown features:
 - Tables: `| Header | Header |`
 - Comments: `COMMENT: text`
 - Images: `![alt text](image-url)`
-- Code blocks: \`\`\`code\`\`\`
-- Inline code: \`code\`
+- Code blocks: `code`
+- Inline code: `code`
 - Links: `[text](url)`
+- Markdown Separators: `---` (horizontal rule, skipped during conversion)
 
 ## License
 
