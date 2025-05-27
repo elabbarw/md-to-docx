@@ -293,3 +293,41 @@ The research design for this seminar report is primarily qualitative, utilizing 
     expect(size).toBeGreaterThan(0);
   });
 });
+
+describe("convertMarkdownToDocx with complex content", () => {
+  it("should convert markdown with various complex elements correctly", async () => {
+    const markdown = `
+## Supporting Evidence
+
+Artificial intelligence's transformative impact is well-documented across multiple industries, supported by a wealth of empirical data, case studies, and expert insights. Here are some key pieces of evidence underpinning the claims made throughout this report:
+
+**Operational Efficiency and Cost Savings**  
+Numerous organizations have reported significant reductions in operational costs through AI-driven automation. For example, a report by McKinsey estimates that AI-powered automation can reduce process costs by up to 30%, as seen in banking and insurance claim processing. In healthcare, AI diagnostic tools have increased early detection rates of diseases like cancer by over 20%, leading to more timely interventions and cost efficiencies.
+
+**Market Adoption and Revenue Growth**  
+A survey from IDC indicates that early adopters of AI in retail and consumer services boosted revenue growth by an average of 15% year-over-year. Leading companies such as Amazon and Alibaba leverage recommendation engines powered by machine learning to personalize shopping experiences, resulting in user engagement increases exceeding 20%. Similarly, OpenAI's GPT-based applications have enabled content creators and businesses to generate high-quality text content rapidly, opening new revenue streams.
+
+**Generative AI and Content Creation**  
+Generative models like DALL·E for images and GPT-4 for text have demonstrated remarkable capabilities. For instance, DALL·E has been used by marketing agencies to produce customized visual content at scale, reducing creative production costs by approximately 25%. In entertainment, AI-generated music compositions with models like MusicLM are attracting attention for their quality comparable to human composers—highlighting the commercial potential of AI in creative sectors.
+
+**Explainability and Regulatory Compliance**  
+Organizations adopting explainable AI frameworks report better regulatory compliance outcomes. For example, a financial institution implementing SHAP explanations for credit scoring models observed a 35% reduction in model bias incidents during audits. As regulatory bodies such as the EU's European Data Protection Board emphasize transparency, companies investing in XAI tools are better positioned to meet evolving legal standards and avoid penalties.
+
+"In sectors where decisions directly impact individuals' lives—like lending or hiring—transparency isn't just ethical; it's a regulatory requirement," notes Dr. Maria Lopez, Director of AI Ethics at the Global Institute for Responsible Innovation.
+`;
+    const blob = await convertMarkdownToDocx(markdown);
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe(
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+
+    // Save the file for manual inspection
+    const outputPath = path.join(outputDir, "supporting-evidence-test.docx");
+    console.log("Saving complex content test output to:", outputPath);
+    const arrayBuffer = await blob.arrayBuffer();
+    fs.writeFileSync(outputPath, Buffer.from(arrayBuffer));
+    console.log("Complex content test output saved successfully.");
+
+    // Add more specific assertions if needed, e.g., by unpacking and inspecting the docx content
+  });
+});

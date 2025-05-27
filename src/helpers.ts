@@ -724,45 +724,8 @@ export async function processImage(
  * @returns The processed paragraph
  */
 export function processParagraph(text: string, style: Style): Paragraph {
-  // Split the text into words
-  const words = text.split(/\s+/);
-
-  // Create text runs for each word
-  const textRuns: TextRun[] = [];
-
-  // Process each word
-  words.forEach((word, index) => {
-    // Check if the word is bold
-    if (word.startsWith("**") && word.endsWith("**")) {
-      // Remove the bold markers
-      const boldText = word.slice(2, -2);
-      textRuns.push(
-        new TextRun({
-          text: boldText,
-          bold: true,
-          size: style.paragraphSize || 24,
-        })
-      );
-    } else {
-      // Regular text
-      textRuns.push(
-        new TextRun({
-          text: word,
-          size: style.paragraphSize || 24,
-        })
-      );
-    }
-
-    // Add space between words if not the last word
-    if (index < words.length - 1) {
-      textRuns.push(
-        new TextRun({
-          text: " ",
-          size: style.paragraphSize || 24,
-        })
-      );
-    }
-  });
+  // Use processFormattedText to handle all inline formatting
+  const textRuns = processFormattedText(text, style);
 
   // Default alignment uses direct enum value
   const alignment = style.paragraphAlignment
