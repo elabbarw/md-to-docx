@@ -192,8 +192,13 @@ export function processListItem(
   config: ListItemConfig,
   style: Style
 ): Paragraph {
+  let textContent = config.text;
+
+  // For numbered lists, don't prepend the number since we'll use proper numbering
+  // For bullet lists, the text content remains as is
+
   // Process the main text with formatting
-  const children = processFormattedText(config.text, style);
+  const children = processFormattedText(textContent, style);
 
   // If there's bold text on the next line, add it with a line break
   if (config.boldText) {
@@ -211,16 +216,34 @@ export function processListItem(
     );
   }
 
-  return new Paragraph({
-    children,
-    bullet: {
-      level: 0,
-    },
-    spacing: {
-      before: style.paragraphSpacing / 2,
-      after: style.paragraphSpacing / 2,
-    },
-  });
+  // Use different formatting for numbered vs bullet lists
+  if (config.isNumbered) {
+    // Use numbering for numbered lists with unique reference per sequence
+    const numberingReference = `numbered-list-${config.sequenceId || 1}`;
+    return new Paragraph({
+      children,
+      numbering: {
+        reference: numberingReference,
+        level: 0,
+      },
+      spacing: {
+        before: style.paragraphSpacing / 2,
+        after: style.paragraphSpacing / 2,
+      },
+    });
+  } else {
+    // Use bullet formatting for bullet lists
+    return new Paragraph({
+      children,
+      bullet: {
+        level: 0,
+      },
+      spacing: {
+        before: style.paragraphSpacing / 2,
+        after: style.paragraphSpacing / 2,
+      },
+    });
+  }
 }
 
 /**

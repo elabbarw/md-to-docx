@@ -67,6 +67,8 @@ export interface ListItemConfig {
   text: string;
   boldText?: string;
   isNumbered?: boolean;
+  listNumber?: number;
+  sequenceId?: number;
 }
 
 export const defaultStyle: Style = {

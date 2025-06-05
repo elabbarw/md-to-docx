@@ -11,6 +11,7 @@ import {
   Footer,
   Header,
   PageNumber,
+  LevelFormat,
 } from "docx";
 import saveAs from "file-saver";
 import { Options, Style, headingConfigs } from "./types";
@@ -116,6 +117,9 @@ export async function convertMarkdownToDocx(
     const lines = markdown.split("\n");
     let inList = false;
     let listItems: Paragraph[] = [];
+    let currentListNumber = 1;
+    let isCurrentListNumbered = false;
+    let numberedListSequenceId = 0;
     let inCodeBlock = false;
     let codeBlockContent = "";
     let codeBlockLanguage: string | undefined;
@@ -136,6 +140,8 @@ export async function convertMarkdownToDocx(
             docChildren.push(...listItems);
             listItems = [];
             inList = false;
+            currentListNumber = 1;
+            isCurrentListNumbered = false;
           }
           docChildren.push(new Paragraph({}));
           continue;
@@ -147,6 +153,8 @@ export async function convertMarkdownToDocx(
             docChildren.push(...listItems);
             listItems = [];
             inList = false;
+            currentListNumber = 1;
+            isCurrentListNumbered = false;
           }
           docChildren.push(new Paragraph({ children: [new PageBreak()] }));
           continue;
@@ -158,6 +166,8 @@ export async function convertMarkdownToDocx(
             docChildren.push(...listItems);
             listItems = [];
             inList = false;
+            currentListNumber = 1;
+            isCurrentListNumbered = false;
           }
           // Skip the separator line
           continue;
@@ -284,6 +294,12 @@ export async function convertMarkdownToDocx(
 
         // Handle lists
         if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
+          // Reset if switching from numbered to bullet list
+          if (isCurrentListNumbered) {
+            currentListNumber = 1;
+            isCurrentListNumbered = false;
+          }
+
           inList = true;
           const listText = trimmedLine.replace(/^[\s-*]+/, "").trim();
 
@@ -304,11 +320,28 @@ export async function convertMarkdownToDocx(
 
         // Handle numbered lists
         if (/^\s*\d+\.\s/.test(trimmedLine)) {
+          // Check if we need to start a new numbered list sequence
+          if (!isCurrentListNumbered || !inList) {
+            // Starting a new numbered list sequence
+            numberedListSequenceId++;
+            currentListNumber = 1;
+            isCurrentListNumbered = true;
+          }
+
           inList = true;
           const listText = trimmedLine.replace(/^\s*\d+\.\s/, "").trim();
           listItems.push(
-            processListItem({ text: listText, isNumbered: true }, style)
+            processListItem(
+              {
+                text: listText,
+                isNumbered: true,
+                listNumber: currentListNumber,
+                sequenceId: numberedListSequenceId,
+              },
+              style
+            )
           );
+          currentListNumber++;
           continue;
         }
 
@@ -550,8 +583,32 @@ export async function convertMarkdownToDocx(
       }
     });
 
+    // Create numbering configurations for all numbered list sequences
+    const numberingConfigs = [];
+    for (let i = 1; i <= numberedListSequenceId; i++) {
+      numberingConfigs.push({
+        reference: `numbered-list-${i}`,
+        levels: [
+          {
+            level: 0,
+            format: LevelFormat.DECIMAL,
+            text: "%1.",
+            alignment: AlignmentType.LEFT,
+            style: {
+              paragraph: {
+                indent: { left: 720, hanging: 260 },
+              },
+            },
+          },
+        ],
+      });
+    }
+
     // Create the document with appropriate settings
     const doc = new Document({
+      numbering: {
+        config: numberingConfigs,
+      },
       sections: [
         {
           properties: {

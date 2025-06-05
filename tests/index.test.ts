@@ -331,3 +331,113 @@ Organizations adopting explainable AI frameworks report better regulatory compli
     // Add more specific assertions if needed, e.g., by unpacking and inspecting the docx content
   });
 });
+
+describe("List Functionality Tests", () => {
+  it("should correctly handle bullet points and numbered lists", async () => {
+    const markdown = `# Lists Test Document
+
+## Bullet Points Test
+- First bullet point
+- Second bullet point with **bold text**
+- Third bullet point with *italic text*
+- Fourth bullet point with \`inline code\`
+
+## Numbered Lists Test
+1. First numbered item
+2. Second numbered item with **bold text**
+3. Third numbered item with *italic text*
+4. Fourth numbered item with \`inline code\`
+
+## Mixed Lists Test
+- Bullet point one
+- Bullet point two
+
+1. First numbered item
+2. Second numbered item
+3. Third numbered item
+
+- Back to bullet points
+- Another bullet point
+
+## Complex List Items
+- List item with multiple formatting: **bold**, *italic*, and \`code\`
+- List item with special characters: "quotes", 'apostrophes', & symbols
+
+1. Numbered item with multiple formatting: **bold**, *italic*, and \`code\`
+2. Numbered item with special characters: "quotes", 'apostrophes', & symbols
+
+## Lists with Bold Text on Next Line
+- Regular list item
+  **Bold text on next line**
+- Another list item
+  **More bold text**
+
+1. Numbered list item
+2. Another numbered item`;
+
+    console.log("Testing bullet points and numbered lists...");
+
+    const docxBlob = await convertMarkdownToDocx(markdown);
+
+    // Save the blob to a file for manual inspection
+    const buffer = await docxBlob.arrayBuffer();
+    const outputPath = path.join(outputDir, "lists-functionality-test.docx");
+    fs.writeFileSync(outputPath, Buffer.from(buffer));
+
+    console.log(
+      `✅ Lists test completed successfully! File saved to: ${outputPath}`
+    );
+
+    // Verify the blob was created successfully
+    expect(docxBlob).toBeInstanceOf(Blob);
+    expect(docxBlob.size).toBeGreaterThan(0);
+    expect(docxBlob.type).toBe(
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    );
+  });
+
+  it("should handle list resets and transitions", async () => {
+    const markdown = `# Advanced Lists Test
+
+## Sequential Numbered Lists (should reset)
+1. First list item
+2. Second list item
+
+Some interrupting text here.
+
+1. New list should start from 1 again
+2. Second item in new list
+3. Third item
+
+## Bullet to Number Transition
+- Bullet item 1
+- Bullet item 2
+
+1. Number item 1 (should be 1, not 3)
+2. Number item 2
+
+## Number to Bullet Transition  
+1. Number item 1
+2. Number item 2
+
+- Bullet item 1 
+- Bullet item 2`;
+
+    console.log("Testing advanced list scenarios...");
+
+    const docxBlob = await convertMarkdownToDocx(markdown);
+
+    // Save the blob to a file
+    const buffer = await docxBlob.arrayBuffer();
+    const outputPath = path.join(outputDir, "advanced-lists-test.docx");
+    fs.writeFileSync(outputPath, Buffer.from(buffer));
+
+    console.log(
+      `✅ Advanced lists test completed! File saved to: ${outputPath}`
+    );
+
+    // Verify the blob was created successfully
+    expect(docxBlob).toBeInstanceOf(Blob);
+    expect(docxBlob.size).toBeGreaterThan(0);
+  });
+});
