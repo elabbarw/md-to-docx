@@ -330,10 +330,23 @@ export async function convertMarkdownToDocx(
 
           inList = true;
           const listText = trimmedLine.replace(/^\s*\d+\.\s/, "").trim();
+
+          // Check if there's a bold section on the next line
+          let boldText = "";
+          if (
+            i + 1 < lines.length &&
+            lines[i + 1].trim().startsWith("**") &&
+            lines[i + 1].trim().endsWith("**")
+          ) {
+            boldText = lines[i + 1].trim().slice(2, -2); // Remove ** markers
+            i++;
+          }
+
           listItems.push(
             processListItem(
               {
                 text: listText,
+                boldText,
                 isNumbered: true,
                 listNumber: currentListNumber,
                 sequenceId: numberedListSequenceId,

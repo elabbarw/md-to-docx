@@ -334,46 +334,80 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
   let isItalic = false;
   let isInlineCode = false;
 
+  // Track unclosed markers to reset at end if needed
+  let boldStart = -1;
+  let italicStart = -1;
+
   for (let j = 0; j < line.length; j++) {
+    // Handle escaped characters
+    if (line[j] === "\\" && j + 1 < line.length) {
+      const nextChar = line[j + 1];
+      if (nextChar === "*" || nextChar === "`" || nextChar === "\\") {
+        currentText += nextChar;
+        j++; // Skip the escaped character
+        continue;
+      }
+      // If not a recognized escape sequence, treat normally
+      currentText += line[j];
+      continue;
+    }
+
     // Handle inline code with backtick
-    if (line[j] === "`") {
+    if (line[j] === "`" && !isInlineCode) {
+      // Starting inline code - flush current text first
       if (currentText) {
-        if (!isInlineCode) {
-          textRuns.push(
-            new TextRun({
-              text: currentText,
-              bold: isBold,
-              italics: isItalic,
-              color: "000000",
-              size: style?.paragraphSize || 24,
-            })
-          );
-        } else {
-          textRuns.push(processInlineCode(currentText, style));
-        }
+        textRuns.push(
+          new TextRun({
+            text: currentText,
+            bold: isBold,
+            italics: isItalic,
+            color: "000000",
+            size: style?.paragraphSize || 24,
+          })
+        );
         currentText = "";
       }
-      isInlineCode = !isInlineCode;
+      isInlineCode = true;
+      continue;
+    }
+
+    if (line[j] === "`" && isInlineCode) {
+      // Ending inline code
+      if (currentText) {
+        textRuns.push(processInlineCode(currentText, style));
+        currentText = "";
+      }
+      isInlineCode = false;
+      continue;
+    }
+
+    // If we're inside inline code, just accumulate text (no formatting)
+    if (isInlineCode) {
+      currentText += line[j];
       continue;
     }
 
     // Handle bold with ** markers
     if (j + 1 < line.length && line[j] === "*" && line[j + 1] === "*") {
+      // Flush current text before toggling bold
       if (currentText) {
-        if (!isInlineCode) {
-          textRuns.push(
-            new TextRun({
-              text: currentText,
-              bold: isBold,
-              italics: isItalic,
-              color: "000000",
-              size: style?.paragraphSize || 24,
-            })
-          );
-        } else {
-          textRuns.push(processInlineCode(currentText, style));
-        }
+        textRuns.push(
+          new TextRun({
+            text: currentText,
+            bold: isBold,
+            italics: isItalic,
+            color: "000000",
+            size: style?.paragraphSize || 24,
+          })
+        );
         currentText = "";
+      }
+
+      // Toggle bold state
+      if (!isBold) {
+        boldStart = j;
+      } else {
+        boldStart = -1;
       }
       isBold = !isBold;
       j++; // Skip the second *
@@ -386,21 +420,25 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
       (j === 0 || line[j - 1] !== "*") &&
       (j === line.length - 1 || line[j + 1] !== "*")
     ) {
+      // Flush current text before toggling italic
       if (currentText) {
-        if (!isInlineCode) {
-          textRuns.push(
-            new TextRun({
-              text: currentText,
-              bold: isBold,
-              italics: isItalic,
-              color: "000000",
-              size: style?.paragraphSize || 24,
-            })
-          );
-        } else {
-          textRuns.push(processInlineCode(currentText, style));
-        }
+        textRuns.push(
+          new TextRun({
+            text: currentText,
+            bold: isBold,
+            italics: isItalic,
+            color: "000000",
+            size: style?.paragraphSize || 24,
+          })
+        );
         currentText = "";
+      }
+
+      // Toggle italic state
+      if (!isItalic) {
+        italicStart = j;
+      } else {
+        italicStart = -1;
       }
       isItalic = !isItalic;
       continue;
@@ -410,9 +448,30 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
     currentText += line[j];
   }
 
-  // Add any remaining text
+  // Handle any remaining text
   if (currentText) {
-    if (!isInlineCode) {
+    // If we have unclosed markers, treat them as literal text
+    if (isBold && boldStart >= 0) {
+      // Insert the ** back into the text and turn off bold
+      const beforeBold = currentText;
+      currentText = "**" + beforeBold;
+      isBold = false;
+    }
+
+    if (isItalic && italicStart >= 0) {
+      // Insert the * back into the text and turn off italic
+      const beforeItalic = currentText;
+      currentText = "*" + beforeItalic;
+      isItalic = false;
+    }
+
+    if (isInlineCode) {
+      // Unclosed inline code - treat as literal text
+      currentText = "`" + currentText;
+    }
+
+    // Only add non-empty text runs
+    if (currentText.trim()) {
       textRuns.push(
         new TextRun({
           text: currentText,
@@ -422,9 +481,18 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
           size: style?.paragraphSize || 24,
         })
       );
-    } else {
-      textRuns.push(processInlineCode(currentText, style));
     }
+  }
+
+  // If no text runs were created, return a single empty run to avoid empty paragraphs
+  if (textRuns.length === 0) {
+    textRuns.push(
+      new TextRun({
+        text: "",
+        color: "000000",
+        size: style?.paragraphSize || 24,
+      })
+    );
   }
 
   return textRuns;
