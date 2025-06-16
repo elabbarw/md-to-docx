@@ -1,6 +1,6 @@
 {
   "name": "@mohtasham/md-to-docx",
-  "version": "1.4.9",
+  "version": "2.0.0",
   "description": "Convert Markdown to Microsoft Word (.docx) documents with support for various Markdown features",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,7 +33,7 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
-    "docx": "^9.3.0",
+    "docx": "^9.5.0",
     "file-saver": "^2.0.5"
   }
 }

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-06-16
+
+### Changed
+
+- Major refactoring of the core conversion engine for improved performance and reliability
+- Updated to use the latest version of docx library (v8.0.0)
+- Improved error handling and reporting
+- Enhanced type safety throughout the codebase
+
+### Breaking Changes
+
+- Removed support for legacy style options
+- Changed default font family to 'Calibri'
+- Modified table of contents generation API
+- Updated configuration interface for better type safety
+
+### Added
+
+- Support for custom page margins
+- Enhanced image handling with better size control
+- New style options for list formatting
+- Improved documentation with TypeScript examples
+
 ## [1.4.9] - 2025-06-6
 
 ### Changed
