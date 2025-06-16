@@ -194,9 +194,6 @@ export function processListItem(
 ): Paragraph {
   let textContent = config.text;
 
-  // For numbered lists, don't prepend the number since we'll use proper numbering
-  // For bullet lists, the text content remains as is
-
   // Process the main text with formatting
   const children = processFormattedText(textContent, style);
 
@@ -379,11 +376,11 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
         currentText = "";
       }
       isBold = !isBold;
-      j++;
+      j++; // Skip the second *
       continue;
     }
 
-    // Handle italic with single * marker
+    // Handle italic with single * marker (but not if it's part of **)
     if (
       line[j] === "*" &&
       (j === 0 || line[j - 1] !== "*") &&
@@ -409,28 +406,7 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
       continue;
     }
 
-    // Handle strikethrough with ~~ markers
-    if (j + 1 < line.length && line[j] === "~" && line[j + 1] === "~") {
-      if (currentText) {
-        if (!isInlineCode) {
-          textRuns.push(
-            new TextRun({
-              text: currentText,
-              bold: isBold,
-              italics: isItalic,
-              color: "000000",
-              size: style?.paragraphSize || 24,
-            })
-          );
-        } else {
-          textRuns.push(processInlineCode(currentText, style));
-        }
-        currentText = "";
-      }
-      j++;
-      continue;
-    }
-
+    // Add to current text
     currentText += line[j];
   }
 
