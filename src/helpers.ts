@@ -44,8 +44,13 @@ export function processHeading(
 ): { paragraph: Paragraph; bookmarkId: string } {
   const headingText = line.replace(new RegExp(`^#{${config.level}} `), "");
   const headingLevel = config.level;
-  // Generate a unique bookmark ID
-  const bookmarkId = `_Toc_${sanitizeForBookmarkId(headingText)}_${Date.now()}`;
+  // Generate a unique bookmark ID using the clean text (without markdown)
+  const cleanTextForBookmark = headingText
+    .replace(/\*\*/g, "")
+    .replace(/\*/g, "");
+  const bookmarkId = `_Toc_${sanitizeForBookmarkId(
+    cleanTextForBookmark
+  )}_${Date.now()}`;
 
   // Get the appropriate font size based on heading level and custom style
   let headingSize = style.titleSize;
@@ -85,19 +90,18 @@ export function processHeading(
     alignment = AlignmentType[style.headingAlignment];
   }
 
+  // Process the heading text to handle markdown formatting (bold/italic)
+  const processedTextRuns = processFormattedTextForHeading(
+    headingText,
+    headingSize
+  );
+
   // Create the paragraph with bookmark
   const paragraph = new Paragraph({
     children: [
       new Bookmark({
         id: bookmarkId,
-        children: [
-          new TextRun({
-            text: headingText,
-            bold: true,
-            size: headingSize,
-            color: "000000",
-          }),
-        ],
+        children: processedTextRuns,
       }),
     ],
     heading:
@@ -112,6 +116,146 @@ export function processHeading(
   });
 
   return { paragraph, bookmarkId };
+}
+
+/**
+ * Processes formatted text specifically for headings (bold/italic) and returns an array of TextRun objects
+ * @param text - The text to process
+ * @param fontSize - The font size to apply
+ * @returns An array of TextRun objects
+ */
+function processFormattedTextForHeading(
+  text: string,
+  fontSize: number
+): TextRun[] {
+  const textRuns: TextRun[] = [];
+  let currentText = "";
+  let isBold = false;
+  let isItalic = false;
+
+  // Track unclosed markers to reset at end if needed
+  let boldStart = -1;
+  let italicStart = -1;
+
+  for (let j = 0; j < text.length; j++) {
+    // Handle escaped characters
+    if (text[j] === "\\" && j + 1 < text.length) {
+      const nextChar = text[j + 1];
+      if (nextChar === "*" || nextChar === "\\") {
+        currentText += nextChar;
+        j++; // Skip the escaped character
+        continue;
+      }
+      // If not a recognized escape sequence, treat normally
+      currentText += text[j];
+      continue;
+    }
+
+    // Handle bold with ** markers
+    if (j + 1 < text.length && text[j] === "*" && text[j + 1] === "*") {
+      // Flush current text before toggling bold
+      if (currentText) {
+        textRuns.push(
+          new TextRun({
+            text: currentText,
+            bold: isBold,
+            italics: isItalic,
+            color: "000000",
+            size: fontSize,
+          })
+        );
+        currentText = "";
+      }
+
+      // Toggle bold state
+      if (!isBold) {
+        boldStart = j;
+      } else {
+        boldStart = -1;
+      }
+      isBold = !isBold;
+      j++; // Skip the second *
+      continue;
+    }
+
+    // Handle italic with single * marker (but not if it's part of **)
+    if (
+      text[j] === "*" &&
+      (j === 0 || text[j - 1] !== "*") &&
+      (j === text.length - 1 || text[j + 1] !== "*")
+    ) {
+      // Flush current text before toggling italic
+      if (currentText) {
+        textRuns.push(
+          new TextRun({
+            text: currentText,
+            bold: isBold,
+            italics: isItalic,
+            color: "000000",
+            size: fontSize,
+          })
+        );
+        currentText = "";
+      }
+
+      // Toggle italic state
+      if (!isItalic) {
+        italicStart = j;
+      } else {
+        italicStart = -1;
+      }
+      isItalic = !isItalic;
+      continue;
+    }
+
+    // Add to current text
+    currentText += text[j];
+  }
+
+  // Handle any remaining text
+  if (currentText) {
+    // If we have unclosed markers, treat them as literal text
+    if (isBold && boldStart >= 0) {
+      // Insert the ** back into the text and turn off bold
+      const beforeBold = currentText;
+      currentText = "**" + beforeBold;
+      isBold = false;
+    }
+
+    if (isItalic && italicStart >= 0) {
+      // Insert the * back into the text and turn off italic
+      const beforeItalic = currentText;
+      currentText = "*" + beforeItalic;
+      isItalic = false;
+    }
+
+    // Only add non-empty text runs
+    if (currentText.trim()) {
+      textRuns.push(
+        new TextRun({
+          text: currentText,
+          bold: isBold,
+          italics: isItalic,
+          color: "000000",
+          size: fontSize,
+        })
+      );
+    }
+  }
+
+  // If no text runs were created, return a single empty run to avoid empty paragraphs
+  if (textRuns.length === 0) {
+    textRuns.push(
+      new TextRun({
+        text: "",
+        color: "000000",
+        size: fontSize,
+        bold: true, // Headings are bold by default
+      })
+    );
+  }
+
+  return textRuns;
 }
 
 /**
