@@ -14,7 +14,7 @@ import {
   LevelFormat,
 } from "docx";
 import saveAs from "file-saver";
-import { Options, Style, headingConfigs } from "./types";
+import { Options, Style, headingConfigs } from "./types.js";
 import {
   processHeading,
   processTable,
@@ -28,7 +28,7 @@ import {
   processLinkParagraph,
   processImage,
   processParagraph,
-} from "./helpers";
+} from "./helpers.js";
 
 const defaultStyle: Style = {
   titleSize: 32,

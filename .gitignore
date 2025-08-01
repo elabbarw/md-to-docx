@@ -25,3 +25,6 @@ Thumbs.db
 # Jest
 jest.config.js
 /test-output
+
+# docx
+*.docx

@@ -14,7 +14,7 @@ import {
   Bookmark,
   InternalHyperlink,
 } from "docx";
-import { Style, TableData, HeadingConfig, ListItemConfig } from "./types";
+import { Style, TableData, HeadingConfig, ListItemConfig } from "./types.js";
 
 // Helper function to sanitize text for use in bookmark IDs
 function sanitizeForBookmarkId(text: string): string {
