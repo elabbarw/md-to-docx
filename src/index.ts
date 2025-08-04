@@ -301,7 +301,7 @@ export async function convertMarkdownToDocx(
           }
 
           inList = true;
-          const listText = trimmedLine.replace(/^[\s-*]+/, "").trim();
+          const listText = trimmedLine.replace(/^[-*]\s+/, "").trim();
 
           // Check if there's a bold section on the next line
           let boldText = "";

@@ -337,10 +337,10 @@ describe("List Functionality Tests", () => {
     const markdown = `# Lists Test Document
 
 ## Bullet Points Test
-- First bullet point
-- Second bullet point with **bold text**
-- Third bullet point with *italic text*
-- Fourth bullet point with \`inline code\`
+- **First** bullet point
+- **Second** bullet point with **bold text**
+- **Third** bullet point with *italic text*
+- **Fourth** bullet point with \`inline code\`
 
 ## Numbered Lists Test
 1. First numbered item
@@ -349,8 +349,8 @@ describe("List Functionality Tests", () => {
 4. Fourth numbered item with \`inline code\`
 
 ## Mixed Lists Test
-- Bullet point one
-- Bullet point two
+- **Bullet** point one
+- **Bullet** point two
 
 1. First numbered item
 2. Second numbered item
