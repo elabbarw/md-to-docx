@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-08-08
+
+### Added
+
+- Inline link support inside paragraphs (e.g., mixed text with `[text](url)`)
+- Strikethrough formatting with `~~text~~` for headings and paragraphs
+
+### Fixed
+
+- ESM export path in `src/index.ts` to ensure Node ESM consumers resolve `./types.js`
+- Image handling works in both Node and browsers; infers image type from headers/URL and uses `Uint8Array` in browsers
+- Table parsing preserves empty cells (no column collapse)
+- Enforced input validation in `convertMarkdownToDocx` for safer API usage
+- Reduced noisy console logs in library code
+
+### Removed
+
+- Deleted dead root-level `index.ts` that referenced undefined variables
+
 ## [2.1.0] - 2025-08-08
 
 ### Added
