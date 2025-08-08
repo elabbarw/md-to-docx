@@ -3,6 +3,8 @@ export interface Style {
   headingSpacing: number;
   paragraphSpacing: number;
   lineSpacing: number;
+  // Text direction
+  direction?: "LTR" | "RTL";
   // Font size options
   heading1Size?: number;
   heading2Size?: number;
@@ -76,6 +78,7 @@ export const defaultStyle: Style = {
   headingSpacing: 240,
   paragraphSpacing: 240,
   lineSpacing: 1.15,
+  direction: "LTR",
   // Default font sizes
   heading1Size: 32,
   heading2Size: 28,

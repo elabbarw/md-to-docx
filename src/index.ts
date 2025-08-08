@@ -9,7 +9,6 @@ import {
   PageBreak,
   InternalHyperlink,
   Footer,
-  Header,
   PageNumber,
   LevelFormat,
 } from "docx";
@@ -36,6 +35,7 @@ const defaultStyle: Style = {
   paragraphSpacing: 240,
   lineSpacing: 1.15,
   paragraphAlignment: "LEFT",
+  direction: "LTR",
 };
 
 const defaultOptions: Options = {
@@ -43,7 +43,7 @@ const defaultOptions: Options = {
   style: defaultStyle,
 };
 
-export { Options, TableData } from "./types";
+export { Options, TableData } from "./types.js";
 
 /**
  * Custom error class for markdown conversion errors
@@ -111,6 +111,9 @@ export async function convertMarkdownToDocx(
   options: Options = defaultOptions
 ): Promise<Blob> {
   try {
+    // Validate inputs early
+    validateInput(markdown, options);
+
     const { style = defaultStyle, documentType = "document" } = options;
     const docChildren: (Paragraph | Table)[] = [];
     const headings: { text: string; level: number; bookmarkId: string }[] = [];
@@ -284,6 +287,7 @@ export async function convertMarkdownToDocx(
                         color: "000000",
                       }),
                     ],
+                    bidirectional: style.direction === "RTL",
                   })
                 );
                 continue;
@@ -386,18 +390,12 @@ export async function convertMarkdownToDocx(
         const imageMatch = trimmedLine.match(/!\[([^\]]*)\]\(([^)]+)\)/);
         if (imageMatch) {
           const [_, altText, imageUrl] = imageMatch;
-          console.log(`Found image in markdown: ${imageUrl}`);
-
           // Process images synchronously to ensure they're fully loaded
           try {
-            console.log(`Starting image processing for: ${imageUrl}`);
             const imageParagraphs = await processImage(
               altText,
               imageUrl,
               style
-            );
-            console.log(
-              `Successfully processed image, adding ${imageParagraphs.length} paragraphs`
             );
             docChildren.push(...imageParagraphs);
           } catch (error) {
@@ -416,16 +414,15 @@ export async function convertMarkdownToDocx(
                   }),
                 ],
                 alignment: AlignmentType.CENTER,
+                bidirectional: style.direction === "RTL",
               })
             );
           }
           continue;
         }
 
-        // Handle links - make sure this is after image handling
-        const linkMatch = trimmedLine.match(
-          /^(?!.*!\[).*\[([^\]]+)\]\(([^)]+)\)/
-        );
+        // Handle standalone links (entire line is a single link) - inline links are handled in processParagraph
+        const linkMatch = trimmedLine.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
         if (linkMatch) {
           const [_, text, url] = linkMatch;
           docChildren.push(processLinkParagraph(text, url, style));
@@ -501,6 +498,7 @@ export async function convertMarkdownToDocx(
           heading: "Heading1", // Or a specific TOC title style
           alignment: AlignmentType.CENTER,
           spacing: { after: 240 },
+          bidirectional: style.direction === "RTL",
         })
       );
       headings.forEach((heading) => {
@@ -571,6 +569,7 @@ export async function convertMarkdownToDocx(
             // Indentation based on heading level
             indent: { left: (heading.level - 1) * 400 },
             spacing: { after: 120 }, // Spacing between TOC items
+            bidirectional: style.direction === "RTL",
           })
         );
       });

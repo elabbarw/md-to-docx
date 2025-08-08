@@ -93,7 +93,8 @@ export function processHeading(
   // Process the heading text to handle markdown formatting (bold/italic)
   const processedTextRuns = processFormattedTextForHeading(
     headingText,
-    headingSize
+    headingSize,
+    style
   );
 
   // Create the paragraph with bookmark
@@ -113,6 +114,7 @@ export function processHeading(
     },
     alignment: alignment,
     style: `Heading${headingLevel}`, // This is crucial for TOC recognition
+    bidirectional: style.direction === "RTL",
   });
 
   return { paragraph, bookmarkId };
@@ -126,7 +128,8 @@ export function processHeading(
  */
 function processFormattedTextForHeading(
   text: string,
-  fontSize: number
+  fontSize: number,
+  style?: Style
 ): TextRun[] {
   const textRuns: TextRun[] = [];
   let currentText = "";
@@ -162,6 +165,7 @@ function processFormattedTextForHeading(
             italics: isItalic,
             color: "000000",
             size: fontSize,
+            rightToLeft: style?.direction === "RTL",
           })
         );
         currentText = "";
@@ -193,6 +197,7 @@ function processFormattedTextForHeading(
             italics: isItalic,
             color: "000000",
             size: fontSize,
+            rightToLeft: style?.direction === "RTL",
           })
         );
         currentText = "";
@@ -238,6 +243,7 @@ function processFormattedTextForHeading(
           italics: isItalic,
           color: "000000",
           size: fontSize,
+          rightToLeft: style?.direction === "RTL",
         })
       );
     }
@@ -307,6 +313,7 @@ export function processTable(
                         new TextRun({
                           text: cell,
                           color: "000000",
+                          rightToLeft: false,
                         }),
                       ],
                     }),
@@ -371,6 +378,7 @@ export function processListItem(
         before: style.paragraphSpacing / 2,
         after: style.paragraphSpacing / 2,
       },
+      bidirectional: style.direction === "RTL",
     });
   } else {
     // Use bullet formatting for bullet lists
@@ -383,6 +391,7 @@ export function processListItem(
         before: style.paragraphSpacing / 2,
         after: style.paragraphSpacing / 2,
       },
+      bidirectional: style.direction === "RTL",
     });
   }
 }
@@ -423,6 +432,7 @@ export function processBlockquote(text: string, style: Style): Paragraph {
         italics: true,
         color: "000000",
         size: style.blockquoteSize || 24, // Use custom blockquote size if provided
+        rightToLeft: style.direction === "RTL",
       }),
     ],
     indent: {
@@ -440,6 +450,7 @@ export function processBlockquote(text: string, style: Style): Paragraph {
       },
     },
     alignment: alignment,
+    bidirectional: style.direction === "RTL",
   });
 }
 
@@ -507,6 +518,7 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
             italics: isItalic,
             color: "000000",
             size: style?.paragraphSize || 24,
+            rightToLeft: style?.direction === "RTL",
           })
         );
         currentText = "";
@@ -542,6 +554,7 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
             italics: isItalic,
             color: "000000",
             size: style?.paragraphSize || 24,
+            rightToLeft: style?.direction === "RTL",
           })
         );
         currentText = "";
@@ -623,6 +636,7 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
           italics: isItalic,
           color: "000000",
           size: style?.paragraphSize || 24,
+          rightToLeft: style?.direction === "RTL",
         })
       );
     }
@@ -658,16 +672,21 @@ export function collectTables(lines: string[]): TableData[] {
         i + 1 < lines.length &&
         /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/.test(lines[i + 1])
       ) {
+        // Preserve empty cells by slicing off leading/trailing pipe and splitting
         const headers = line
+          .trim()
+          .replace(/^\|/, "")
+          .replace(/\|$/, "")
           .split("|")
-          .filter(Boolean)
           .map((h) => h.trim());
         const rows: string[][] = [];
         let j = i + 2;
         while (j < lines.length && lines[j].trim().startsWith("|")) {
           const row = lines[j]
+            .trim()
+            .replace(/^\|/, "")
+            .replace(/\|$/, "")
             .split("|")
-            .filter(Boolean)
             .map((cell) => cell.trim());
           rows.push(row);
           j++;
@@ -695,6 +714,7 @@ export function processInlineCode(code: string, style?: Style): TextRun {
     shading: {
       fill: "F5F5F5",
     },
+    rightToLeft: style?.direction === "RTL",
   });
 }
 
@@ -725,12 +745,14 @@ export function processCodeBlock(
         size: style.codeBlockSize || 18,
         color: "666666",
         bold: true,
+        rightToLeft: style.direction === "RTL",
       }),
       new TextRun({
         text: "\n",
         font: "Courier New",
         size: style.codeBlockSize || 18,
         break: 1,
+        rightToLeft: style.direction === "RTL",
       })
     );
   }
@@ -749,6 +771,7 @@ export function processCodeBlock(
         font: "Courier New",
         size: style.codeBlockSize || 20,
         color: "444444",
+        rightToLeft: style.direction === "RTL",
       })
     );
 
@@ -760,6 +783,7 @@ export function processCodeBlock(
           font: "Courier New",
           size: style.codeBlockSize || 20,
           break: 1,
+          rightToLeft: style.direction === "RTL",
         })
       );
     }
@@ -819,6 +843,7 @@ export function processLinkParagraph(
         text: text,
         color: "0000FF",
         underline: { type: "single" },
+        rightToLeft: style.direction === "RTL",
       }),
     ],
     link: url,
@@ -830,6 +855,7 @@ export function processLinkParagraph(
       before: style.paragraphSpacing,
       after: style.paragraphSpacing,
     },
+    bidirectional: style.direction === "RTL",
   });
 }
 
@@ -869,10 +895,7 @@ export async function processImage(
   style: Style
 ): Promise<Paragraph[]> {
   try {
-    console.log(`Starting image processing for URL: ${imageUrl}`);
-
     const response = await fetch(imageUrl);
-    console.log(`Fetch response status: ${response.status}`);
 
     if (!response.ok) {
       throw new Error(
@@ -881,22 +904,34 @@ export async function processImage(
     }
 
     const arrayBuffer = await response.arrayBuffer();
-    console.log(`ArrayBuffer size: ${arrayBuffer.byteLength} bytes`);
+    // Use Buffer in Node environments, Uint8Array in browsers
+    const data: Uint8Array | Buffer =
+      typeof Buffer !== "undefined"
+        ? Buffer.from(arrayBuffer)
+        : new Uint8Array(arrayBuffer);
 
-    const buffer = Buffer.from(arrayBuffer);
-    console.log(`Buffer size: ${buffer.length} bytes`);
+    // Infer image type from content-type header or URL extension
+    const contentType = response.headers.get("content-type") || "";
+    let imageType: "png" | "jpg" | "gif" = "png";
+    if (/jpeg|jpg/i.test(contentType) || /\.(jpe?g)(\?|$)/i.test(imageUrl)) {
+      imageType = "jpg";
+    } else if (/png/i.test(contentType) || /\.(png)(\?|$)/i.test(imageUrl)) {
+      imageType = "png";
+    } else if (/gif/i.test(contentType) || /\.(gif)(\?|$)/i.test(imageUrl)) {
+      imageType = "gif";
+    }
 
     // Create a paragraph with just the image, no hyperlink
     return [
       new Paragraph({
         children: [
           new ImageRun({
-            data: buffer,
+            data,
             transformation: {
               width: 200,
               height: 200,
             },
-            type: "jpg",
+            type: imageType,
           }),
         ],
         alignment: AlignmentType.CENTER,
@@ -949,11 +984,6 @@ export function processParagraph(text: string, style: Style): Paragraph {
       : AlignmentType.LEFT
     : AlignmentType.LEFT;
 
-  // Log the alignment for debugging
-  console.log(
-    `Paragraph alignment: ${alignment}, Style alignment: ${style.paragraphAlignment}`
-  );
-
   // Only apply indent for justified text
   const indent =
     style.paragraphAlignment === "JUSTIFIED"
@@ -969,5 +999,6 @@ export function processParagraph(text: string, style: Style): Paragraph {
     },
     alignment,
     indent,
+    bidirectional: style.direction === "RTL",
   });
 }

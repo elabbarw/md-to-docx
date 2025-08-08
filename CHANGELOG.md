@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-08-08
+
+### Added
+
+- RTL/LTR direction support via new `style.direction` option (`"LTR" | "RTL"`).
+  - Applies bidirectional layout to paragraphs, headings, blockquotes, list items, TOC entries, links, inline code, and code blocks (uses paragraph `bidirectional` and text run `rightToLeft` where appropriate in `docx`).
+  - Works well in combination with `paragraphAlignment: "RIGHT"` for typical RTL layouts.
+
+### Notes
+
+- Direction is applied at paragraph and run level; style-level paragraph style does not include `bidirectional` per `docx` typings, so it is set on individual elements.
+
 ## [2.0.3] - 2025-01-21
 
 ### Fixed
