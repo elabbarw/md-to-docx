@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2025-08-09
+
+### Fixed
+
+- Unified table separator detection in `src/index.ts` to support alignment markers (`:---`, `:---:`, `---:`) in Markdown tables, matching `collectTables` behavior.
+
+### Added
+
+- New tests for table rendering covering alignment markers and empty cells.
+
 ## [2.2.0] - 2025-08-08
 
 ### Added

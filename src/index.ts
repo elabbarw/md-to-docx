@@ -251,11 +251,12 @@ export async function convertMarkdownToDocx(
 
         // Handle tables
         if (trimmedLine.startsWith("|") && trimmedLine.endsWith("|")) {
+          // Support standard and aligned separator rows (with optional leading/trailing colons)
+          const separatorRegex = /^\s*\|(?:\s*:?-+:?\s*\|)+\s*$/;
           if (
             i + 1 < lines.length &&
-            (/^\s*\|(?:\s*-+\s*\|)+\s*$/.test(lines[i + 1]) ||
-              (i + 2 < lines.length &&
-                /^\s*\|(?:\s*-+\s*\|)+\s*$/.test(lines[i + 2])))
+            (separatorRegex.test(lines[i + 1]) ||
+              (i + 2 < lines.length && separatorRegex.test(lines[i + 2])))
           ) {
             if (inList) {
               docChildren.push(...listItems);
