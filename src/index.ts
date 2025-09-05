@@ -11,6 +11,7 @@ import {
   Footer,
   PageNumber,
   LevelFormat,
+  IPropertiesOptions,
 } from "docx";
 import saveAs from "file-saver";
 import { Options, Style, headingConfigs } from "./types.js";
@@ -100,17 +101,46 @@ function validateInput(markdown: string, options: Options): void {
 }
 
 /**
- * Convert Markdown to Docx
+ * Convert Markdown to Docx file
  * @param markdown - The Markdown string to convert
  * @param options - The options for the conversion
  * @returns A Promise that resolves to a Blob containing the Docx file
  * @throws {MarkdownConversionError} If conversion fails
  */
-export async function convertMarkdownToDocx(
+export async function convertMarkdownToDocx( markdown: string, options: Options = defaultOptions): Promise<Blob>  {
+  try {
+    
+    const docxOptions = await parseToDocxOptions(markdown, options);
+    // Create the document with appropriate settings
+    const doc = new Document(docxOptions);
+
+    return await Packer.toBlob(doc);
+
+  } catch (error) {
+    if (error instanceof MarkdownConversionError) {
+      throw error;
+    }
+    throw new MarkdownConversionError(
+      `Failed to convert markdown to docx: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+      { originalError: error }
+    );
+  }
+}
+/**
+ * Convert Markdown to Docx options
+ * @param markdown - The Markdown string to convert
+ * @param options - The options for the conversion
+ * @returns A Promise that resolves to a Blob containing the Docx file
+ * @throws {MarkdownConversionError} If conversion fails
+ */
+export async function parseToDocxOptions (
   markdown: string,
   options: Options = defaultOptions
-): Promise<Blob> {
+): Promise<IPropertiesOptions> {
   try {
+
     // Validate inputs early
     validateInput(markdown, options);
 
@@ -618,7 +648,7 @@ export async function convertMarkdownToDocx(
     }
 
     // Create the document with appropriate settings
-    const doc = new Document({
+    const docxOptions: IPropertiesOptions = {
       numbering: {
         config: numberingConfigs,
       },
@@ -779,9 +809,9 @@ export async function convertMarkdownToDocx(
           },
         ],
       },
-    });
+    };
 
-    return await Packer.toBlob(doc);
+    return docxOptions;
   } catch (error) {
     if (error instanceof MarkdownConversionError) {
       throw error;
