@@ -22,9 +22,11 @@ describe("convertMarkdownToDocx", () => {
 
     const markdown = `
 # Image Test
-This is a test with an embedded image.
+This is a test with embedded images and explicit sizing.
 
-![Test Image](https://picsum.photos/200/200)
+![Square 200x200](https://picsum.photos/200/200)
+![Logo 180x16](https://raw.githubusercontent.com/microsoft/vscode/main/resources/win32/code_70x70.png#180x16)
+![Explicit w h params](https://picsum.photos/600/400#w=150&h=100)
 `;
 
     const options: Options = {

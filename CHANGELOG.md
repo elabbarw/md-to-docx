@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2025-09-05
+
+### Added
+
+- New exported function `parseToDocxOptions(markdown, options)` that generates the `docx` `Document` configuration without creating a Blob. Useful for advanced pipelines, custom transforms, and testing.
+
+### Changed
+
+- Refactored `convertMarkdownToDocx` to delegate configuration generation to `parseToDocxOptions`, improving separation of concerns and testability. No breaking changes to the existing API.
+
+### Fixed
+
+- Images now preserve aspect ratio instead of being forced square; honors size hints in the image URL fragment such as `#180x16`, `#w=150&h=100`, and `#width=..&height=..`. Also supports data URLs directly. (Addresses issue #11)
+
+### Tests
+
+- Expanded image test in `tests/index.test.ts` to include explicit width/height hints.
+- Added `tests/image-size.test.ts` to validate width-only, width+height, and data URL scenarios for images.
+
 ## [2.2.1] - 2025-08-09
 
 ### Fixed
