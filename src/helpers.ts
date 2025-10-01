@@ -477,13 +477,13 @@ export function processComment(text: string, style: Style): Paragraph {
 }
 
 /**
- * Processes formatted text (bold/italic/inline-code) and returns an array of TextRun objects
+ * Processes formatted text (bold/italic/inline-code/links) and returns an array of TextRun or ExternalHyperlink objects
  * @param line - The line to process
  * @param style - The style configuration
- * @returns An array of TextRun objects
+ * @returns An array of TextRun or ExternalHyperlink objects
  */
-export function processFormattedText(line: string, style?: Style): TextRun[] {
-  const textRuns: TextRun[] = [];
+export function processFormattedText(line: string, style?: Style): (TextRun | ExternalHyperlink)[] {
+  const textRuns: (TextRun | ExternalHyperlink)[] = [];
   let currentText = "";
   let isBold = false;
   let isItalic = false;
@@ -497,7 +497,7 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
     // Handle escaped characters
     if (line[j] === "\\" && j + 1 < line.length) {
       const nextChar = line[j + 1];
-      if (nextChar === "*" || nextChar === "`" || nextChar === "\\") {
+      if (nextChar === "*" || nextChar === "`" || nextChar === "\\" || nextChar === "[" || nextChar === "]") {
         currentText += nextChar;
         j++; // Skip the escaped character
         continue;
@@ -505,6 +505,82 @@ export function processFormattedText(line: string, style?: Style): TextRun[] {
       // If not a recognized escape sequence, treat normally
       currentText += line[j];
       continue;
+    }
+
+    // Handle inline links [text](url) - only when not in inline code
+    if (!isInlineCode && line[j] === "[") {
+      // Look for closing ] and then (url)
+      let closeBracket = -1;
+      let openParen = -1;
+      let closeParen = -1;
+
+      // Find closing bracket
+      for (let k = j + 1; k < line.length; k++) {
+        if (line[k] === "\\" && k + 1 < line.length) {
+          k++; // Skip escaped character
+          continue;
+        }
+        if (line[k] === "]") {
+          closeBracket = k;
+          break;
+        }
+      }
+
+      // If we found closing bracket, look for (url)
+      if (closeBracket > j && closeBracket + 1 < line.length && line[closeBracket + 1] === "(") {
+        openParen = closeBracket + 1;
+        // Find closing paren
+        for (let k = openParen + 1; k < line.length; k++) {
+          if (line[k] === ")") {
+            closeParen = k;
+            break;
+          }
+        }
+      }
+
+      // If we found a complete link pattern
+      if (closeBracket > j && openParen > closeBracket && closeParen > openParen) {
+        // Flush current text first
+        if (currentText) {
+          textRuns.push(
+            new TextRun({
+              text: currentText,
+              bold: isBold,
+              italics: isItalic,
+              color: "000000",
+              size: style?.paragraphSize || 24,
+              rightToLeft: style?.direction === "RTL",
+            })
+          );
+          currentText = "";
+        }
+
+        // Extract link text and URL
+        const linkText = line.substring(j + 1, closeBracket);
+        const linkUrl = line.substring(openParen + 1, closeParen);
+
+        // Create hyperlink
+        textRuns.push(
+          new ExternalHyperlink({
+            children: [
+              new TextRun({
+                text: linkText,
+                color: "0000FF",
+                underline: { type: "single" },
+                bold: isBold,
+                italics: isItalic,
+                size: style?.paragraphSize || 24,
+                rightToLeft: style?.direction === "RTL",
+              }),
+            ],
+            link: linkUrl,
+          })
+        );
+
+        // Skip to after the link
+        j = closeParen;
+        continue;
+      }
     }
 
     // Handle inline code with backtick
